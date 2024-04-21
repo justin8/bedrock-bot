@@ -1,13 +1,9 @@
 import json
-import sys
 from enum import Enum
-from typing import Dict, List
 
 import boto3
-import click
 from botocore.config import Config
 from rich.console import Console
-from rich.markdown import Markdown
 
 console = Console()
 
@@ -20,7 +16,7 @@ class _BedrockModel:
     Creating new implementations of this base model:
     - Define extra params to inject to the invoke call on self._model_params
     - Provide a model_id to `super().__init__()`
-    - If your model needs a different body than the default (`{"messages": [{"role": "user", "content": "foo"}]}`), overwrite `self._create_invoke_body()`
+    - If your model needs a different body than the default, overwrite `self._create_invoke_body()`
     """
 
     _model_params = {}

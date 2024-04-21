@@ -1,13 +1,7 @@
-import json
 import sys
-from enum import Enum
-from typing import Dict, List
 
-import boto3
 import click
 from botocore.config import Config
-from rich.console import Console
-from rich.markdown import Markdown
 
 from . import model_list
 from .util import formatted_print
