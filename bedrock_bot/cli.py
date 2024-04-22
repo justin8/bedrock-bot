@@ -1,5 +1,6 @@
 import sys
 
+import boto3
 import click
 from botocore.config import Config
 
@@ -22,7 +23,11 @@ def model_class_from_input(value):
 
 @click.command()
 @click.argument("args", nargs=-1)
-@click.option("-r", "--region", help="The AWS region to use for requests")
+@click.option(
+    "-r",
+    "--region",
+    help="The AWS region to use for requests. If no default region is specified, defaults to us-east-1",
+)
 @click.option("--raw-output", help="Don't interpret markdown in the AI response")
 @click.option(
     "-m",
@@ -37,6 +42,8 @@ def main(model, region, raw_output, args):
     boto_config = Config()
     if region:
         boto_config = Config(region_name=region)
+    elif boto3.setup_default_session() and not boto3.DEFAULT_SESSION.region_name:
+        boto_config = Config(region_name="us-east-1")
 
     instance = model(boto_config=boto_config)
 
