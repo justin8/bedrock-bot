@@ -23,6 +23,7 @@ def model_class_from_input(value):
 @click.command()
 @click.argument("args", nargs=-1)
 @click.option("-r", "--region", help="The AWS region to use for requests")
+@click.option("--raw-output", help="Don't interpret markdown in the AI response")
 @click.option(
     "-m",
     "--model",
@@ -30,7 +31,7 @@ def model_class_from_input(value):
     default="Claude-3-Haiku",
     help="The model to use for requests",
 )
-def main(model, region, args):
+def main(model, region, raw_output args):
     model = model_class_from_input(model)
 
     boto_config = Config()
@@ -77,6 +78,9 @@ def main(model, region, args):
 
         response = instance.invoke(user_input)
 
-        formatted_print(response)
+        if raw_output:
+            print(response)
+        else:
+            formatted_print(response)
 
         print()
