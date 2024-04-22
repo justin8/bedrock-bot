@@ -8,6 +8,14 @@ from rich.console import Console
 console = Console()
 
 
+class ConversationRole(Enum):
+    USER = "user"
+    ASSISTANT = "assistant"
+
+    def __str__(self):
+        return self.value
+
+
 class _BedrockModel:
     """
     Base class for all models. Usage:
@@ -21,13 +29,6 @@ class _BedrockModel:
 
     _model_params = {}
     name = "Base Model"
-
-    class _ConversationRole(Enum):
-        USER = "user"
-        ASSISTANT = "assistant"
-
-        def __str__(self):
-            return self.value
 
     def __init__(
         self,
@@ -43,13 +44,13 @@ class _BedrockModel:
     def reset(self):
         self.messages = []
 
-    def _append_message(self, role: _ConversationRole, message: str):
+    def append_message(self, role: ConversationRole, message: str):
         self.messages.append({"role": role.value, "content": message})
 
     def invoke(self, message: str):
-        self._append_message(self._ConversationRole.USER, message)
+        self.append_message(ConversationRole.USER, message)
         response = self._invoke()
-        self._append_message(self._ConversationRole.ASSISTANT, response)
+        self.append_message(ConversationRole.ASSISTANT, response)
         return response
 
     def _create_invoke_body(self) -> dict:
