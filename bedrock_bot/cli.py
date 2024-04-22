@@ -31,7 +31,7 @@ def model_class_from_input(value):
     default="Claude-3-Haiku",
     help="The model to use for requests",
 )
-def main(model, region, raw_output args):
+def main(model, region, raw_output, args):
     model = model_class_from_input(model)
 
     boto_config = Config()
