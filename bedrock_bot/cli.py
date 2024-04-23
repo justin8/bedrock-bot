@@ -21,6 +21,31 @@ def model_class_from_input(value):
         )
 
 
+def generate_boto_config(region):
+    boto_config = Config()
+    if region:
+        boto_config = Config(region_name=region)
+    elif boto3.setup_default_session() and not boto3.DEFAULT_SESSION.region_name:
+        boto_config = Config(region_name="us-east-1")
+    return boto_config
+
+
+def get_user_input(instance, args):
+    if instance.messages == [] and not sys.stdin.isatty():
+        user_input = sys.stdin.read()
+        print(f"> {user_input}")
+    elif instance.messages == [] and args:
+        user_input = " ".join(args)
+        print(f"> {user_input}")
+    elif not sys.stdin.isatty():
+        print(
+            "Note that you can only do one-shot requests when providing input via stdin"
+        )
+        exit()
+    else:
+        user_input = input("> ")
+
+
 @click.command()
 @click.argument("args", nargs=-1)
 @click.option(
@@ -38,13 +63,7 @@ def model_class_from_input(value):
 )
 def main(model, region, raw_output, args):
     model = model_class_from_input(model)
-
-    boto_config = Config()
-    if region:
-        boto_config = Config(region_name=region)
-    elif boto3.setup_default_session() and not boto3.DEFAULT_SESSION.region_name:
-        boto_config = Config(region_name="us-east-1")
-
+    boto_config = generate_boto_config(region)
     instance = model(boto_config=boto_config)
 
     print(
@@ -57,19 +76,7 @@ def main(model, region, raw_output, args):
 
     while True:
         print()
-        if instance.messages == [] and not sys.stdin.isatty():
-            user_input = sys.stdin.read()
-            print(f"> {user_input}")
-        elif instance.messages == [] and args:
-            user_input = " ".join(args)
-            print(f"> {user_input}")
-        elif not sys.stdin.isatty():
-            print(
-                "Note that you can only do one-shot requests when providing input via stdin"
-            )
-            exit()
-        else:
-            user_input = input("> ")
+        user_input = get_user_input(instance, args)
 
         if not user_input:
             continue

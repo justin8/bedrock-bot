@@ -5,4 +5,4 @@ console = Console()
 
 
 def formatted_print(text):
-    console.print(Markdown(text))
+    console.print(Markdown(text, code_theme="material"))
