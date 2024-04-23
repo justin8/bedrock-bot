@@ -68,6 +68,14 @@ def get_user_input(instance, args):
     return user_input
 
 
+def handle_input_files(input_file) -> list:
+    output = []
+    if input_file:
+        for file in input_file:
+            output.append(file.read())
+    return output
+
+
 @click.command()
 @click.argument("args", nargs=-1)
 @click.option(
@@ -90,7 +98,14 @@ def get_user_input(instance, args):
     default=False,
     help="Enable verbose logging messages",
 )
-def main(model, region, raw_output, args, verbose):
+@click.option(
+    "-i",
+    "--input-file",
+    multiple=True,
+    type=click.File(),
+    help="Read in file(s) to be used in your queries",
+)
+def main(model, region, raw_output, args, verbose, input_file):
     configure_logger(verbose)
 
     model = model_class_from_input(model)
@@ -120,6 +135,10 @@ def main(model, region, raw_output, args, verbose):
             print("\nResetting...")
             instance.reset()
             continue
+
+        if not instance.messages:
+            user_input += "\n"
+            user_input += "\n".join(handle_input_files(input_file))
 
         response = instance.invoke(user_input)
 
