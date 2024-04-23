@@ -1,3 +1,4 @@
+import logging
 import sys
 
 import boto3
@@ -6,6 +7,25 @@ from botocore.config import Config
 
 from . import model_list
 from .util import formatted_print
+
+CONTEXT_SETTINGS = dict(help_option_names=["--help", "-h"])
+LOG_FORMATTER = logging.Formatter(
+    "%(asctime)s - %(levelname)s - %(module)s - %(message)s",
+    "%Y-%m-%d %H:%M:%S",
+)
+log = None
+
+
+def configure_logger(verbose):
+    global log
+    log_level = logging.ERROR
+    if verbose:
+        log_level = logging.INFO
+
+    logging.basicConfig(level=log_level)
+    log = logging.getLogger()
+    log.handlers[0].setFormatter(LOG_FORMATTER)
+    log.info(f"Log level set to {logging.getLevelName(log_level)}")
 
 
 def available_models():
@@ -45,6 +65,8 @@ def get_user_input(instance, args):
     else:
         user_input = input("> ")
 
+    return user_input
+
 
 @click.command()
 @click.argument("args", nargs=-1)
@@ -61,7 +83,16 @@ def get_user_input(instance, args):
     default="Claude-3-Haiku",
     help="The model to use for requests",
 )
-def main(model, region, raw_output, args):
+@click.option(
+    "-v",
+    "--verbose",
+    is_flag=True,
+    default=False,
+    help="Enable verbose logging messages",
+)
+def main(model, region, raw_output, args, verbose):
+    configure_logger(verbose)
+
     model = model_class_from_input(model)
     boto_config = generate_boto_config(region)
     instance = model(boto_config=boto_config)

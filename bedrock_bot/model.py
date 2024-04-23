@@ -1,9 +1,12 @@
 import json
+import logging
 from enum import Enum
 
 import boto3
 from botocore.config import Config
 from rich.console import Console
+
+logger = logging.getLogger()
 
 console = Console()
 
@@ -49,16 +52,17 @@ class _BedrockModel:
 
     def invoke(self, message: str):
         self.append_message(ConversationRole.USER, message)
+
+        logger.info(f"Sending current messages to AI: {self.messages}")
         response = self._invoke()
         self.append_message(ConversationRole.ASSISTANT, response)
         return response
 
     def _create_invoke_body(self) -> dict:
-        body = {
-            "messages": self.messages,
-        }
+        raise NotImplementedError
 
-        return body
+    def _handle_response(self, body) -> str:
+        raise NotImplementedError
 
     def _invoke(self):
         body = self._create_invoke_body() | self._model_params
@@ -68,19 +72,30 @@ class _BedrockModel:
                 modelId=self._model_id, body=json.dumps(body)
             )
             body = json.loads(response["body"].read())
-            response_message = body["content"][0]
 
-            if response_message["type"] != "text":
-                raise RuntimeError(
-                    "Unexpected response type to prompt: " + response_message["type"]
-                )
-
-            output = response_message["text"]
+            output = self._handle_response(body)
 
         return output
 
 
 class _Claude3(_BedrockModel):
+    def _create_invoke_body(self) -> dict:
+        body = {
+            "messages": self.messages,
+        }
+
+        return body
+
+    def _handle_response(self, body) -> str:
+        response_message = body["content"][0]
+
+        if response_message["type"] != "text":
+            raise RuntimeError(
+                "Unexpected response type to prompt: " + response_message["type"]
+            )
+
+        return response_message["text"]
+
     def __init__(self, model_id: str, boto_config=None):
         self._model_params = {
             "max_tokens": 2000,
@@ -115,3 +130,38 @@ class Claude3Haiku(_Claude3):
             model_id="anthropic.claude-3-haiku-20240307-v1:0",
             boto_config=boto_config,
         )
+
+
+class MistralLarge(_BedrockModel):
+    name = "Mistral-Large"
+
+    def __init__(self, boto_config=None):
+        self._model_params = {
+            "max_tokens": 200,
+            "temperature": 0.5,
+            "top_p": 0.9,
+            "top_k": 50,
+        }
+        super().__init__(
+            model_id="mistral.mistral-large-2402-v1:0", boto_config=boto_config
+        )
+
+    def _format_messages(self):
+        formatted_messages = ["<s>[INST]"]
+        for message in self.messages:
+            role = message["role"]
+            content = message["content"]
+            formatted_message = f"{role}: {content}"
+            formatted_messages.append(formatted_message)
+        formatted_messages.append("[/INST]")
+        return "\n".join(formatted_messages)
+
+    def _create_invoke_body(self) -> dict:
+        prompt = self._format_messages()
+        body = {"prompt": prompt}
+        return body
+
+    def _handle_response(self, body) -> str:
+        response_message = body["outputs"][0]
+
+        return response_message["text"]
