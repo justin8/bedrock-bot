@@ -53,7 +53,6 @@ class _BedrockModel:
     def invoke(self, message: str):
         self.append_message(ConversationRole.USER, message)
 
-        logger.info(f"Sending current messages to AI: {self.messages}")
         response = self._invoke()
         self.append_message(ConversationRole.ASSISTANT, response)
         return response
@@ -68,6 +67,7 @@ class _BedrockModel:
         body = self._create_invoke_body() | self.model_params
 
         with console.status("[bold green]Waiting for response..."):
+            logger.info(f"Sending current messages to AI: {self.messages}")
             response = self._bedrock.invoke_model(
                 modelId=self._model_id, body=json.dumps(body)
             )
