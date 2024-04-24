@@ -72,7 +72,7 @@ def handle_input_files(input_file) -> list:
     output = []
     if input_file:
         for file in input_file:
-            output.append(file.read())
+            output.append(f"File '{file.name}':\n" + file.read())
     return output
 
 
