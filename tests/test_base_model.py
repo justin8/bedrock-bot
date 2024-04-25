@@ -8,13 +8,12 @@ from bedrock_bot.models.base_model import ConversationRole, _BedrockModel
 
 
 @pytest.fixture
-def model():
+@patch("boto3.client")
+def model(mock_boto_client):
     model_id = "test-model-id"
-    bedrock_client = MagicMock()
     model = _BedrockModel(
         model_id=model_id,
     )
-    model._bedrock = bedrock_client
     return model
 
 
