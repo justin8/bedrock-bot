@@ -37,7 +37,6 @@ class _Claude3(_BedrockModel):
         return response_message["text"]
 
     def __init__(self, model_id: str, boto_config=None):
-
         super().__init__(
             model_id=model_id,
             boto_config=boto_config,
