@@ -1,7 +1,6 @@
 import logging
-import sys
 from io import StringIO
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import click
 import pytest
@@ -10,7 +9,6 @@ from click.testing import CliRunner
 from bedrock_bot.cli import (
     available_models,
     configure_logger,
-    generate_boto_config,
     get_user_input,
     handle_input_files,
     main,
