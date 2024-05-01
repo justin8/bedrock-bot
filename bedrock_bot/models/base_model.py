@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 from enum import Enum
@@ -15,13 +17,14 @@ class ConversationRole(Enum):
     USER = "user"
     ASSISTANT = "assistant"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
 
 class _BedrockModel:
-    """
-    Base class for all models. Usage:
+    """Base class for all models.
+
+    Usage:
     Add a message to the conversation and invoke the model with `model.invoke(message)`.
 
     Creating new implementations of this base model:
@@ -31,26 +34,25 @@ class _BedrockModel:
     """
 
     name = "Base Model"
-    model_params = {}
+    model_params = {}  # noqa: RUF012
+    _model_id: str
 
     def __init__(
         self,
-        model_id: str,
-        boto_config=None,
-    ):
-        self._model_id = model_id
+        boto_config: None | Config = None,
+    ) -> None:
         if not boto_config:
             boto_config = Config()
         self._bedrock = boto3.client("bedrock-runtime", config=boto_config)
         self.messages = []
 
-    def reset(self):
+    def reset(self) -> None:
         self.messages = []
 
-    def append_message(self, role: ConversationRole, message: str):
+    def append_message(self, role: ConversationRole, message: str) -> None:
         self.messages.append({"role": role.value, "content": message})
 
-    def invoke(self, message: str):
+    def invoke(self, message: str) -> str:
         self.append_message(ConversationRole.USER, message)
 
         response = self._invoke()
@@ -60,19 +62,18 @@ class _BedrockModel:
     def _create_invoke_body(self) -> dict:
         raise NotImplementedError
 
-    def _handle_response(self, body) -> str:
+    def _handle_response(self, body: dict) -> str:
         raise NotImplementedError
 
-    def _invoke(self):
+    def _invoke(self) -> str:
         body = self._create_invoke_body() | self.model_params
 
         with console.status("[bold green]Waiting for response..."):
             logger.info(f"Sending current messages to AI: {self.messages}")
             response = self._bedrock.invoke_model(
-                modelId=self._model_id, body=json.dumps(body)
+                modelId=self._model_id,
+                body=json.dumps(body),
             )
             body = json.loads(response["body"].read())
 
-            output = self._handle_response(body)
-
-        return output
+            return self._handle_response(body)

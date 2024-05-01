@@ -1,8 +1,14 @@
+from __future__ import annotations
+
 import logging
+from typing import TYPE_CHECKING
 
 from rich.console import Console
 
 from .base_model import _BedrockModel
+
+if TYPE_CHECKING:
+    from botocore.config import Config
 
 logger = logging.getLogger()
 
@@ -11,19 +17,20 @@ console = Console()
 
 class MistralLarge(_BedrockModel):
     name = "Mistral-Large"
-    model_params = {
+    model_params = {  # noqa: RUF012
         "max_tokens": 200,
         "temperature": 0.5,
         "top_p": 0.9,
         "top_k": 50,
     }
 
-    def __init__(self, boto_config=None):
+    def __init__(self, boto_config: None | Config = None) -> None:
+        self._model_id = "mistral.mistral-large-2402-v1:0"
         super().__init__(
-            model_id="mistral.mistral-large-2402-v1:0", boto_config=boto_config
+            boto_config=boto_config,
         )
 
-    def _format_messages(self):
+    def _format_messages(self) -> str:
         formatted_messages = ["<s>[INST]"]
         for message in self.messages:
             role = message["role"]
@@ -35,10 +42,9 @@ class MistralLarge(_BedrockModel):
 
     def _create_invoke_body(self) -> dict:
         prompt = self._format_messages()
-        body = {"prompt": prompt}
-        return body
+        return {"prompt": prompt}
 
-    def _handle_response(self, body) -> str:
+    def _handle_response(self, body: dict) -> str:
         response_message = body["outputs"][0]
 
         return response_message["text"]

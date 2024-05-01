@@ -47,15 +47,11 @@ def test_get_user_input():
     instance = MagicMock()
     instance.messages = []
 
-    with patch("sys.stdin", StringIO("Input from stdin")), patch(
-        "builtins.input", return_value="Input from prompt"
-    ):
+    with patch("sys.stdin", StringIO("Input from stdin")), patch("builtins.input", return_value="Input from prompt"):
         assert get_user_input(instance=instance, args=[]) == "Input from stdin"
 
         with patch("sys.stdin.isatty", return_value=True):
-            assert (
-                get_user_input(instance=instance, args=["arg1", "arg2"]) == "arg1 arg2"
-            )
+            assert get_user_input(instance=instance, args=["arg1", "arg2"]) == "arg1 arg2"
             assert get_user_input(instance=instance, args=[]) == "Input from prompt"
 
 
