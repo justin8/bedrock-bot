@@ -1,9 +1,15 @@
 [tool.poetry]
 name = "bedrock-bot"
-version = "1.2.4"
+version = "1.2.5"
 description = ""
 authors = ["Justin Dray <justin@dray.be>"]
 readme = "README.md"
+
+[tool.ruff.lint]
+select = ["ALL"]
+
+[tool.ruff]
+line-length = 120
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -23,3 +29,4 @@ ruff = "^0.4.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+

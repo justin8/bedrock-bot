@@ -30,9 +30,7 @@ class _Claude3(_BedrockModel):
         response_message = body["content"][0]
 
         if response_message["type"] != "text":
-            raise RuntimeError(
-                "Unexpected response type to prompt: " + response_message["type"]
-            )
+            raise RuntimeError("Unexpected response type to prompt: " + response_message["type"])
 
         return response_message["text"]
 
