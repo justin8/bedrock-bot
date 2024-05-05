@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bedrock-bot"
-version = "1.2.6"
+version = "1.2.7"
 description = ""
 authors = ["Justin Dray <justin@dray.be>"]
 readme = "README.md"
