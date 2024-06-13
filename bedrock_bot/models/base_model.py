@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from enum import Enum
+from typing import Union
 
 import boto3
 from botocore.config import Config
@@ -39,7 +40,7 @@ class _BedrockModel:
 
     def __init__(
         self,
-        boto_config: None | Config = None,
+        boto_config: Union[None, Config] = None,
     ) -> None:
         if not boto_config:
             boto_config = Config()

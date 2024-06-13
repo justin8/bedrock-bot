@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from rich.console import Console
 
@@ -65,7 +65,7 @@ It does not mention this information about itself unless the information is dire
 
         return response_message["text"]
 
-    def __init__(self, boto_config: None | Config = None) -> None:
+    def __init__(self, boto_config: Union[None, Config] = None) -> None:
         super().__init__(
             boto_config=boto_config,
         )
@@ -74,7 +74,7 @@ It does not mention this information about itself unless the information is dire
 class Claude3Sonnet(_Claude3):
     name = "Claude-3-Sonnet"
 
-    def __init__(self, boto_config: None | Config = None) -> None:
+    def __init__(self, boto_config: Union[None, Config] = None) -> None:
         self._model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
 
         super().__init__(
@@ -85,7 +85,7 @@ class Claude3Sonnet(_Claude3):
 class Claude3Haiku(_Claude3):
     name = "Claude-3-Haiku"
 
-    def __init__(self, boto_config: None | Config = None) -> None:
+    def __init__(self, boto_config: Union[None, Config] = None) -> None:
         self._model_id = "anthropic.claude-3-haiku-20240307-v1:0"
 
         super().__init__(

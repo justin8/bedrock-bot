@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from rich.console import Console
 
@@ -24,7 +24,7 @@ class MistralLarge(_BedrockModel):
         "top_k": 50,
     }
 
-    def __init__(self, boto_config: None | Config = None) -> None:
+    def __init__(self, boto_config: Union[None, Config] = None) -> None:
         self._model_id = "mistral.mistral-large-2402-v1:0"
         super().__init__(
             boto_config=boto_config,
