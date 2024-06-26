@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import readline  # noqa: F401 # pylint: disable=unused-import
 import sys
 from typing import TYPE_CHECKING
 
