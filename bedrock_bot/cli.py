@@ -112,6 +112,7 @@ def handle_input_files(input_file: list[TextIOWrapper]) -> list:
     type=click.File(),
     help="Read in file(s) to be used in your queries",
 )
+@click.option("--system-prompt", help="Provide a custom system prompt to override the default")
 def main(  # noqa: PLR0913
     *,
     model: str,
@@ -120,12 +121,16 @@ def main(  # noqa: PLR0913
     args: list[str],
     verbose: bool,
     input_file: list[TextIOWrapper],
+    system_prompt: str,
 ) -> None:
     configure_logger(verbose=verbose)
 
     model_class = model_class_from_input(model)
     boto_config = generate_boto_config(region)
     instance = model_class(boto_config=boto_config)
+
+    if system_prompt:
+        instance.system_prompt = system_prompt
 
     print(  # noqa: T201
         f"Hello! I am an AI assistant powered by Amazon Bedrock and using the model {instance.name}. Enter 'quit' or"

@@ -42,15 +42,17 @@ It uses markdown for coding.
 
 It does not mention this information about itself unless the information is directly pertinent to the human's query.
 """.replace("\n", " ")
-    model_params = {  # noqa: RUF012
-        "max_tokens": 2000,
-        "temperature": 1,
-        "top_k": 250,
-        "top_p": 0.999,
-        "stop_sequences": ["\n\nHuman:"],
-        "anthropic_version": "bedrock-2023-05-31",
-        "system": system_prompt,
-    }
+
+    def _model_params(self) -> dict:
+        return {
+            "max_tokens": 2000,
+            "temperature": 1,
+            "top_k": 250,
+            "top_p": 0.999,
+            "stop_sequences": ["\n\nHuman:"],
+            "anthropic_version": "bedrock-2023-05-31",
+            "system": self.system_prompt,
+        }
 
     def _create_invoke_body(self) -> dict:
         return {

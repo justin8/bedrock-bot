@@ -51,13 +51,11 @@ def test_handle_response(model):
 @patch("bedrock_bot.models.base_model._BedrockModel._handle_response")
 def test_internal_invoke(mock_handle_response, mock_create_invoke_body, model):
     model._bedrock.invoke_model.return_value = {"body": BytesIO(json.dumps({"text": "Hello, world!"}).encode())}
-    model.model_params = {"param1": "2"}
+    model._model_params = lambda: {"param1": "2"}
     model._model_id = "some-model"
 
     mock_create_invoke_body.return_value = {"foo": "bar"}
     mock_handle_response.return_value = "handle response return value"
-
-    print(f"foooo: {model._handle_response()}")
 
     response = model._invoke()
     assert response == "handle response return value"

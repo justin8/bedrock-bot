@@ -17,12 +17,14 @@ console = Console()
 
 class MistralLarge(_BedrockModel):
     name = "Mistral-Large"
-    model_params = {  # noqa: RUF012
-        "max_tokens": 200,
-        "temperature": 0.5,
-        "top_p": 0.9,
-        "top_k": 50,
-    }
+
+    def _model_params(self) -> dict:
+        return {
+            "max_tokens": 200,
+            "temperature": 0.5,
+            "top_p": 0.9,
+            "top_k": 50,
+        }
 
     def __init__(self, boto_config: Union[None, Config] = None) -> None:
         self._model_id = "mistral.mistral-large-2402-v1:0"

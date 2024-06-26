@@ -17,6 +17,7 @@ console = Console()
 class ConversationRole(Enum):
     USER = "user"
     ASSISTANT = "assistant"
+    SYSTEM = "system"
 
     def __str__(self) -> str:
         return self.value
@@ -35,16 +36,19 @@ class _BedrockModel:
     """
 
     name = "Base Model"
-    model_params = {}  # noqa: RUF012
+    system_prompt: str
     _model_id: str
 
     def __init__(
         self,
         boto_config: Union[None, Config] = None,
+        system_prompt: Union[None, str] = None,
     ) -> None:
         if not boto_config:
             boto_config = Config()
         self._bedrock = boto3.client("bedrock-runtime", config=boto_config)
+        if system_prompt:
+            self.system_prompt = system_prompt
         self.messages = []
 
     def reset(self) -> None:
@@ -60,6 +64,9 @@ class _BedrockModel:
         self.append_message(ConversationRole.ASSISTANT, response)
         return response
 
+    def _model_params(self) -> dict:
+        raise NotImplementedError
+
     def _create_invoke_body(self) -> dict:
         raise NotImplementedError
 
@@ -67,7 +74,7 @@ class _BedrockModel:
         raise NotImplementedError
 
     def _invoke(self) -> str:
-        body = {**self._create_invoke_body(), **self.model_params}
+        body = {**self._create_invoke_body(), **self._model_params()}
 
         with console.status("[bold green]Waiting for response..."):
             logger.info(f"Sending current messages to AI: {self.messages}")
