@@ -119,4 +119,4 @@ def test_main_exit(mock_get_user_input, mock_model_class_from_input, runner):
 @patch("bedrock_bot.cli.get_user_input", side_effect=["reset>", "exit"])
 def test_main_reset(mock_get_user_input, mock_model_class_from_input, runner):
     result = runner.invoke(main)
-    assert "Resetting..." in result.output
+    assert "Resetting conversation..." in result.output

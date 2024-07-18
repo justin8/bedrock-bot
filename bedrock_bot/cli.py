@@ -142,7 +142,15 @@ def main(  # noqa: PLR0913
 
     while True:
         print()  # noqa: T201
-        user_input = get_user_input(instance, args)
+        try:
+            user_input = get_user_input(instance, args)
+        except KeyboardInterrupt:
+            if instance.messages:
+                print("\nCtrl+c detected. Resetting conversation...")  # noqa: T201
+                instance.reset()
+                continue
+
+            sys.exit(0)
 
         if not user_input:
             continue
@@ -152,7 +160,7 @@ def main(  # noqa: PLR0913
         if user_input.lower().startswith("new>") or user_input.lower().startswith(
             "reset>",
         ):
-            print("\nResetting...")  # noqa: T201
+            print("\nResetting conversation...")  # noqa: T201
             instance.reset()
             continue
 
