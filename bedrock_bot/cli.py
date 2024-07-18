@@ -58,7 +58,7 @@ def generate_boto_config(region: str) -> Config:
     return boto_config
 
 
-def get_user_input(instance: _BedrockModel, args: list[str]) -> str:
+def get_user_input(instance: _BedrockModel, args: list[str] = []) -> str:  # noqa: B006
     if instance.messages == [] and not sys.stdin.isatty():
         user_input = sys.stdin.read()
         print(f"> {user_input}")  # noqa: T201
@@ -144,6 +144,7 @@ def main(  # noqa: PLR0913
         print()  # noqa: T201
         try:
             user_input = get_user_input(instance, args)
+            args = []  # clear args after first loop
         except KeyboardInterrupt:
             if instance.messages:
                 print("\nCtrl+c detected. Resetting conversation...")  # noqa: T201
