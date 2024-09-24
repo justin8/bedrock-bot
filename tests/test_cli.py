@@ -44,15 +44,10 @@ def test_configure_logger():
 
 
 def test_get_user_input():
-    instance = MagicMock()
-    instance.messages = []
-
-    with patch("sys.stdin", StringIO("Input from stdin")), patch("builtins.input", return_value="Input from prompt"):
-        assert get_user_input(instance=instance, args=[]) == "Input from stdin"
-
-        with patch("sys.stdin.isatty", return_value=True):
-            assert get_user_input(instance=instance, args=["arg1", "arg2"]) == "arg1 arg2"
-            assert get_user_input(instance=instance, args=[]) == "Input from prompt"
+    with patch("sys.stdin", StringIO("Input from stdin")), patch(
+        "builtins.input", return_value="Input from prompt"
+    ), patch("sys.exit") as mock_exit, patch("sys.stdin.isatty", return_value=True):
+        assert get_user_input() == "Input from prompt"
 
 
 def test_handle_input_files():
@@ -87,7 +82,7 @@ def test_main_stdin(mock_model_class_from_input, mock_stdin, runner, monkeypatch
     mock_stdin.seek(0)
     monkeypatch.setattr("sys.stdin", mock_stdin)
     result = runner.invoke(main, input="Hello\n")
-    assert "Hello! I am an AI assistant" in result.output
+    assert "Note that stdin is not supported for input" in result.output
 
 
 @patch("bedrock_bot.cli.sys.stdin.isatty", return_value=False)
@@ -96,7 +91,7 @@ def test_main_non_tty_input(mock_model_class_from_input, mock_isatty, runner):
     mock_model_class_from_input()().name = "model-name"
     result = runner.invoke(main, input="Hello\n")
     print(result.output)
-    assert "Hello!" in result.output
+    assert "Note that stdin is not supported for input" in result.output
 
 
 @patch("bedrock_bot.cli.sys.stdin.isatty", return_value=True)
@@ -104,7 +99,7 @@ def test_main_non_tty_input(mock_model_class_from_input, mock_isatty, runner):
 @patch("bedrock_bot.cli.model_class_from_input")
 def test_main_tty_input(mock_model_class_from_input, mock_input, mock_isatty, runner):
     result = runner.invoke(main)
-    assert "Hello!" in result.output
+    assert "Note that stdin is not supported for input" in result.output
 
 
 @patch("bedrock_bot.cli.model_class_from_input")

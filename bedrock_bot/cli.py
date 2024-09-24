@@ -58,19 +58,12 @@ def generate_boto_config(region: str) -> Config:
     return boto_config
 
 
-def get_user_input(instance: _BedrockModel) -> str:
-    if instance.messages == [] and not sys.stdin.isatty():
-        user_input = sys.stdin.read()
-        print(f"> {user_input}")  # noqa: T201
+def get_user_input() -> str:
     if not sys.stdin.isatty():
-        print(  # noqa: T201
-            "Note that you can only do one-shot requests when providing input via stdin",
-        )
+        print("Note that stdin is not supported for input")  # noqa: T201
         sys.exit()
     else:
-        user_input = input("> ")
-
-    return user_input
+        return input("> ")
 
 
 def handle_input_files(input_file: list[TextIOWrapper]) -> list:
@@ -78,6 +71,37 @@ def handle_input_files(input_file: list[TextIOWrapper]) -> list:
     if input_file:
         output = [f"File '{file.name}':\n{file.read()}" for file in input_file]
     return output
+
+
+def handle_args(instance: _BedrockModel, args: list[str], *, raw_output: bool) -> None:
+    user_input = " ".join(args)
+    print(f"> {user_input}")  # noqa: T201
+    response = instance.invoke(user_input)
+
+    if raw_output:
+        print(response)  # noqa: T201
+    else:
+        formatted_print(response)
+    sys.exit(0)
+
+
+def handle_user_input(
+    instance: _BedrockModel,
+    user_input: str,
+    input_file: list[TextIOWrapper],
+    *,
+    raw_output: bool,
+) -> None:
+    if not instance.messages:
+        user_input += "\n"
+        user_input += "\n".join(handle_input_files(input_file))
+
+    response = instance.invoke(user_input)
+
+    if raw_output:
+        print(response)  # noqa: T201
+    else:
+        formatted_print(response)
 
 
 @click.command()
@@ -130,58 +154,39 @@ def main(  # noqa: PLR0913
         instance.system_prompt = system_prompt
 
     if args:
-        user_input = " ".join(args)
-        print(f"> {user_input}")  # noqa: T201
-        response = instance.invoke(user_input)
+        handle_args(instance, args, raw_output)
 
-        if raw_output:
-            print(response)  # noqa: T201
-        else:
-            formatted_print(response)
-
-        sys.exit(0)
-    else:
+    if sys.stdin.isatty():
         print(  # noqa: T201
-            f"Hello! I am an AI assistant powered by Amazon Bedrock and using the model {instance.name}. Enter 'quit' or"
-            " 'exit' at any time to exit. How may I help you today?",
+            f"Hello! I am an AI assistant powered by Amazon Bedrock and using the model {instance.name}. "
+            "Enter 'quit' or 'exit' at any time to exit. How may I help you today?",
         )
         print(  # noqa: T201
             "(You can clear existing context by starting a query with 'new>' or 'reset>')",
         )
 
-        while True:
-            print()  # noqa: T201
-            try:
-                user_input = get_user_input(instance)
-            except KeyboardInterrupt:
-                if instance.messages:
-                    print("\nCtrl+c detected. Resetting conversation...")  # noqa: T201
-                    instance.reset()
-                    continue
-
-                sys.exit(0)
-
-            if not user_input:
-                continue
-            if user_input.lower() == "quit" or user_input.lower() == "exit":
-                print("\nGoodbye!")  # noqa: T201
-                sys.exit()
-            if user_input.lower().startswith("new>") or user_input.lower().startswith(
-                "reset>",
-            ):
-                print("\nResetting conversation...")  # noqa: T201
+    while True:
+        print()  # noqa: T201
+        try:
+            user_input = get_user_input()
+        except KeyboardInterrupt:
+            if instance.messages:
+                print("\nCtrl+c detected. Resetting conversation...")  # noqa: T201
                 instance.reset()
                 continue
 
-            if not instance.messages:
-                user_input += "\n"
-                user_input += "\n".join(handle_input_files(input_file))
+            sys.exit(0)
 
-            response = instance.invoke(user_input)
+        if not user_input:
+            continue
+        if user_input.lower() == "quit" or user_input.lower() == "exit":
+            print("\nGoodbye!")  # noqa: T201
+            sys.exit()
+        if user_input.lower().startswith("new>") or user_input.lower().startswith(
+            "reset>",
+        ):
+            print("\nResetting conversation...")  # noqa: T201
+            instance.reset()
+            continue
 
-            if raw_output:
-                print(response)  # noqa: T201
-            else:
-                formatted_print(response)
-
-            print()  # noqa: T201
+        handle_user_input(instance, user_input, input_file, raw_output)
