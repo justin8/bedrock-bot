@@ -58,14 +58,11 @@ def generate_boto_config(region: str) -> Config:
     return boto_config
 
 
-def get_user_input(instance: _BedrockModel, args: list[str] = []) -> str:  # noqa: B006
+def get_user_input(instance: _BedrockModel) -> str:
     if instance.messages == [] and not sys.stdin.isatty():
         user_input = sys.stdin.read()
         print(f"> {user_input}")  # noqa: T201
-    elif instance.messages == [] and args:
-        user_input = " ".join(args)
-        print(f"> {user_input}")  # noqa: T201
-    elif not sys.stdin.isatty():
+    if not sys.stdin.isatty():
         print(  # noqa: T201
             "Note that you can only do one-shot requests when providing input via stdin",
         )
@@ -132,43 +129,9 @@ def main(  # noqa: PLR0913
     if system_prompt:
         instance.system_prompt = system_prompt
 
-    print(  # noqa: T201
-        f"Hello! I am an AI assistant powered by Amazon Bedrock and using the model {instance.name}. Enter 'quit' or"
-        " 'exit' at any time to exit. How may I help you today?",
-    )
-    print(  # noqa: T201
-        "(You can clear existing context by starting a query with 'new>' or 'reset>')",
-    )
-
-    while True:
-        print()  # noqa: T201
-        try:
-            user_input = get_user_input(instance, args)
-            args = []  # clear args after first loop
-        except KeyboardInterrupt:
-            if instance.messages:
-                print("\nCtrl+c detected. Resetting conversation...")  # noqa: T201
-                instance.reset()
-                continue
-
-            sys.exit(0)
-
-        if not user_input:
-            continue
-        if user_input.lower() == "quit" or user_input.lower() == "exit":
-            print("\nGoodbye!")  # noqa: T201
-            sys.exit()
-        if user_input.lower().startswith("new>") or user_input.lower().startswith(
-            "reset>",
-        ):
-            print("\nResetting conversation...")  # noqa: T201
-            instance.reset()
-            continue
-
-        if not instance.messages:
-            user_input += "\n"
-            user_input += "\n".join(handle_input_files(input_file))
-
+    if args:
+        user_input = " ".join(args)
+        print(f"> {user_input}")  # noqa: T201
         response = instance.invoke(user_input)
 
         if raw_output:
@@ -176,4 +139,49 @@ def main(  # noqa: PLR0913
         else:
             formatted_print(response)
 
-        print()  # noqa: T201
+        sys.exit(0)
+    else:
+        print(  # noqa: T201
+            f"Hello! I am an AI assistant powered by Amazon Bedrock and using the model {instance.name}. Enter 'quit' or"
+            " 'exit' at any time to exit. How may I help you today?",
+        )
+        print(  # noqa: T201
+            "(You can clear existing context by starting a query with 'new>' or 'reset>')",
+        )
+
+        while True:
+            print()  # noqa: T201
+            try:
+                user_input = get_user_input(instance)
+            except KeyboardInterrupt:
+                if instance.messages:
+                    print("\nCtrl+c detected. Resetting conversation...")  # noqa: T201
+                    instance.reset()
+                    continue
+
+                sys.exit(0)
+
+            if not user_input:
+                continue
+            if user_input.lower() == "quit" or user_input.lower() == "exit":
+                print("\nGoodbye!")  # noqa: T201
+                sys.exit()
+            if user_input.lower().startswith("new>") or user_input.lower().startswith(
+                "reset>",
+            ):
+                print("\nResetting conversation...")  # noqa: T201
+                instance.reset()
+                continue
+
+            if not instance.messages:
+                user_input += "\n"
+                user_input += "\n".join(handle_input_files(input_file))
+
+            response = instance.invoke(user_input)
+
+            if raw_output:
+                print(response)  # noqa: T201
+            else:
+                formatted_print(response)
+
+            print()  # noqa: T201
