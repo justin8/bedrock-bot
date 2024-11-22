@@ -111,7 +111,7 @@ def handle_user_input(
     "--region",
     help="The AWS region to use for requests. If no default region is specified, defaults to us-east-1",
 )
-@click.option("--raw-output", help="Don't interpret markdown in the AI response")
+@click.option("--raw-output", is_flag=True, default=False, help="Don't interpret markdown in the AI response")
 @click.option(
     "-m",
     "--model",
@@ -138,7 +138,7 @@ def main(  # noqa: PLR0913
     *,
     model: str,
     region: str,
-    raw_output: str,
+    raw_output: bool,
     args: list[str],
     verbose: bool,
     input_file: list[TextIOWrapper],
@@ -154,7 +154,7 @@ def main(  # noqa: PLR0913
         instance.system_prompt = system_prompt
 
     if args:
-        handle_args(instance, args, raw_output)
+        handle_args(instance, args, raw_output=raw_output)
 
     if sys.stdin.isatty():
         print(  # noqa: T201
@@ -189,4 +189,4 @@ def main(  # noqa: PLR0913
             instance.reset()
             continue
 
-        handle_user_input(instance, user_input, input_file, raw_output)
+        handle_user_input(instance, user_input, input_file, raw_output=raw_output)
