@@ -116,7 +116,7 @@ def handle_user_input(
     "-m",
     "--model",
     type=click.Choice(available_models(), case_sensitive=False),
-    default="Claude-3-Haiku",
+    default="Claude-3.5-Sonnet-v2",
     help="The model to use for requests",
 )
 @click.option(

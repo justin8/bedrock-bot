@@ -93,3 +93,47 @@ class Claude3Haiku(_Claude3):
         super().__init__(
             boto_config=boto_config,
         )
+
+
+class Claude3Opus(_Claude3):
+    name = "Claude-3-Opus"
+
+    def __init__(self, boto_config: Union[None, Config] = None) -> None:
+        self._model_id = "us.anthropic.claude-3-opus-20240229-v1:0"
+
+        super().__init__(
+            boto_config=boto_config,
+        )
+
+
+class Claude35Haiku(_Claude3):
+    name = "Claude-3.5-Haiku"
+
+    def __init__(self, boto_config: Union[None, Config] = None) -> None:
+        self._model_id = "us.anthropic.claude-3-5-haiku-20241022-v1:0"
+
+        super().__init__(
+            boto_config=boto_config,
+        )
+
+
+class Claude35Sonnet(_Claude3):
+    name = "Claude-3.5-Sonnet"
+
+    def __init__(self, boto_config: Union[None, Config] = None) -> None:
+        self._model_id = "anthropic.claude-3-haiku-20240307-v1:0"
+
+        super().__init__(
+            boto_config=boto_config,
+        )
+
+
+class Claude35SonnetV2(_Claude3):
+    name = "Claude-3.5-Sonnet-v2"
+
+    def __init__(self, boto_config: Union[None, Config] = None) -> None:
+        self._model_id = "us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+
+        super().__init__(
+            boto_config=boto_config,
+        )
