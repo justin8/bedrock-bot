@@ -73,15 +73,11 @@ def handle_input_files(input_file: list[TextIOWrapper]) -> list:
     return output
 
 
-def handle_args(instance: _BedrockModel, args: list[str], *, raw_output: bool) -> None:
+def handle_args(instance: _BedrockModel, input_file: list[TextIOWrapper], args: list[str], *, raw_output: bool) -> None:
     user_input = " ".join(args)
-    print(f"> {user_input}")  # noqa: T201
-    response = instance.invoke(user_input)
+    print(f"> {user_input}", file=sys.stderr)  # noqa: T201
 
-    if raw_output:
-        print(response)  # noqa: T201
-    else:
-        formatted_print(response)
+    handle_user_input(instance, user_input, input_file, raw_output=raw_output)
     sys.exit(0)
 
 
@@ -154,7 +150,7 @@ def main(  # noqa: PLR0913
         instance.system_prompt = system_prompt
 
     if args:
-        handle_args(instance, args, raw_output=raw_output)
+        handle_args(instance, input_file, args, raw_output=raw_output)
 
     if sys.stdin.isatty():
         print(  # noqa: T201
