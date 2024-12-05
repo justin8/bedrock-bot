@@ -6,6 +6,20 @@ from .models import (
     Claude35Sonnet,
     Claude35SonnetV2,
     MistralLarge,
+    NovaLite,
+    NovaMicro,
+    NovaPro,
 )
 
-model_list = [Claude3Haiku, Claude3Sonnet, Claude35Haiku, Claude35Sonnet, Claude35SonnetV2, Claude3Opus, MistralLarge]
+model_list = [
+    Claude3Haiku,
+    Claude3Sonnet,
+    Claude35Haiku,
+    Claude35Sonnet,
+    Claude35SonnetV2,
+    Claude3Opus,
+    NovaMicro,
+    NovaLite,
+    NovaPro,
+    MistralLarge,
+]
