@@ -5,7 +5,6 @@ from .models import (
     Claude35Haiku,
     Claude35Sonnet,
     Claude35SonnetV2,
-    MistralLarge,
     NovaLite,
     NovaMicro,
     NovaPro,
@@ -21,5 +20,4 @@ model_list = [
     NovaMicro,
     NovaLite,
     NovaPro,
-    MistralLarge,
 ]
