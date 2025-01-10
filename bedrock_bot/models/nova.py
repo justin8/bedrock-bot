@@ -55,17 +55,12 @@ Guidelines:
         Use feedback to improve and refine responses.
 
 """.replace("\n", " ")
-
-    def _model_params(self) -> dict:
-        return {
-            "inferenceConfig": {
-                "maxTokens": 2000,
-                "temperature": 0.7,
-                "topP": 0.9,
-                "stopSequences": ["\n\nHuman:"],
-            },
-            "system": [{"text": self.system_prompt}],
-        }
+    inference_config = {
+        "maxTokens": 2000,
+        "temperature": 0.7,
+        "topP": 0.9,
+        "stopSequences": [],
+    }
 
     def __init__(self, boto_config: Union[None, Config] = None) -> None:
         super().__init__(
@@ -93,13 +88,6 @@ class NovaLite(_Nova):
         super().__init__(
             boto_config=boto_config,
         )
-
-
-example = {
-    "additionalModelRequestFields": {},
-    "inferenceConfig": {"maxTokens": 512, "stopSequences": [], "temperature": 0.7, "topP": 0.9},
-    "messages": [{"content": [{"text": "what is your name"}], "role": "user"}],
-}
 
 
 class NovaPro(_Nova):
