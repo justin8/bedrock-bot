@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import readline  # noqa: F401 # pylint: disable=unused-import
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import boto3
@@ -13,8 +14,6 @@ from . import model_list
 from .util import formatted_print
 
 if TYPE_CHECKING:
-    from io import TextIOWrapper
-
     from bedrock_bot.models.base_model import _BedrockModel
 
 CONTEXT_SETTINGS = {"help_option_names": ["--help", "-h"]}
@@ -52,7 +51,7 @@ def model_class_from_input(value: str) -> type[_BedrockModel]:
 def generate_boto_config(region: str) -> Config:
     boto_config = Config()
     if region:
-        boto_config = Config(region_name=region)
+        boto_config = Config(region_name=region, read_timeout=600)
     elif boto3.setup_default_session() and not boto3.DEFAULT_SESSION.region_name:
         boto_config = Config(region_name="us-east-1")
     return boto_config
@@ -66,31 +65,31 @@ def get_user_input() -> str:
         return input("> ")
 
 
-def handle_input_files(input_file: list[TextIOWrapper]) -> list:
+def handle_input_files(input_files: list[str]) -> list:
     output = []
-    if input_file:
-        output = [f"File '{file.name}':\n{file.read()}" for file in input_file]
+    if input_files:
+        for file in input_files:
+            with Path(file).open("r") as f:
+                output.append(f"File '{file}':\n{f.read()}")
     return output
 
 
-def handle_args(instance: _BedrockModel, input_file: list[TextIOWrapper], args: list[str], *, raw_output: bool) -> None:
+def handle_args(args: list[str]) -> str:
     user_input = " ".join(args)
     print(f"> {user_input}", file=sys.stderr)  # noqa: T201
-
-    handle_user_input(instance, user_input, input_file, raw_output=raw_output)
-    sys.exit(0)
+    return user_input
 
 
 def handle_user_input(
     instance: _BedrockModel,
     user_input: str,
-    input_file: list[TextIOWrapper],
+    input_files: list[str],
     *,
     raw_output: bool,
 ) -> None:
-    if not instance.messages:
+    if input_files:
         user_input += "\n"
-        user_input += "\n".join(handle_input_files(input_file))
+        user_input += "\n".join(handle_input_files(input_files))
 
     response = instance.invoke(user_input)
 
@@ -125,8 +124,9 @@ def handle_user_input(
 @click.option(
     "-i",
     "--input-file",
+    "input_files",
     multiple=True,
-    type=click.File(),
+    type=click.Path(exists=True, dir_okay=False),
     help="Read in file(s) to be used in your queries",
 )
 @click.option("--system-prompt", help="Provide a custom system prompt to override the default")
@@ -137,7 +137,7 @@ def main(  # noqa: PLR0913
     raw_output: bool,
     args: list[str],
     verbose: bool,
-    input_file: list[TextIOWrapper],
+    input_files: list[str],
     system_prompt: str,
 ) -> None:
     configure_logger(verbose=verbose)
@@ -150,17 +150,19 @@ def main(  # noqa: PLR0913
         instance.system_prompt = system_prompt
 
     if args:
-        handle_args(instance, input_file, args, raw_output=raw_output)
+        user_input = handle_args(args)
+        handle_user_input(instance, user_input, input_files, raw_output=raw_output)
+        sys.exit(0)
 
-    if sys.stdin.isatty():
-        print(  # noqa: T201
-            f"Hello! I am an AI assistant powered by Amazon Bedrock and using the model {instance.name}. "
-            "Enter 'quit' or 'exit' at any time to exit. How may I help you today?",
-        )
-        print(  # noqa: T201
-            "(You can clear existing context by starting a query with 'new>' or 'reset>')",
-        )
+    print(  # noqa: T201
+        f"Hello! I am an AI assistant powered by Amazon Bedrock and using the model {instance.name}. "
+        "Enter 'quit' or 'exit' at any time to exit. How may I help you today?",
+    )
+    print(  # noqa: T201
+        "(You can clear existing context by starting a query with 'new>' or 'reset>')",
+    )
 
+    first_iteration = True
     while True:
         print()  # noqa: T201
         try:
@@ -185,4 +187,7 @@ def main(  # noqa: PLR0913
             instance.reset()
             continue
 
-        handle_user_input(instance, user_input, input_file, raw_output=raw_output)
+        handle_user_input(instance, user_input, input_files, raw_output=raw_output)
+        if first_iteration:
+            first_iteration = False
+            input_files = []

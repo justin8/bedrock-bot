@@ -1,6 +1,7 @@
 import logging
 from io import StringIO
-from unittest.mock import MagicMock, patch
+from pathlib import Path
+from unittest.mock import MagicMock, patch, mock_open
 
 import click
 import pytest
@@ -50,16 +51,11 @@ def test_get_user_input():
         assert get_user_input() == "Input from prompt"
 
 
-def test_handle_input_files():
-    file1 = StringIO("File 1 content")
-    file2 = StringIO("File 2 content")
-
-    file1.name = "file1"
-    file2.name = "file2"
-
-    assert handle_input_files([file1, file2]) == [
-        "File 'file1':\nFile 1 content",
-        "File 'file2':\nFile 2 content",
+@patch.object(Path, "open", new_callable=mock_open, read_data="File content")
+def test_handle_input_files(mocked_open):
+    assert handle_input_files(["file1", "file2"]) == [
+        "File 'file1':\nFile content",
+        "File 'file2':\nFile content",
     ]
     assert handle_input_files([]) == []
 
