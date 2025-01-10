@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import readline  # noqa: F401 # pylint: disable=unused-import
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import boto3
@@ -65,15 +64,6 @@ def get_user_input() -> str:
         return input("> ")
 
 
-def handle_input_files(input_files: list[str]) -> list:
-    output = []
-    if input_files:
-        for file in input_files:
-            with Path(file).open("r") as f:
-                output.append(f"File '{file}':\n{f.read()}")
-    return output
-
-
 def handle_args(args: list[str]) -> str:
     user_input = " ".join(args)
     print(f"> {user_input}", file=sys.stderr)  # noqa: T201
@@ -87,11 +77,7 @@ def handle_user_input(
     *,
     raw_output: bool,
 ) -> None:
-    if input_files:
-        user_input += "\n"
-        user_input += "\n".join(handle_input_files(input_files))
-
-    response = instance.invoke(user_input)
+    response = instance.invoke(user_input, input_files)
 
     if raw_output:
         print(response)  # noqa: T201

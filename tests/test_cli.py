@@ -11,7 +11,6 @@ from bedrock_bot.cli import (
     available_models,
     configure_logger,
     get_user_input,
-    handle_input_files,
     main,
     model_class_from_input,
 )
@@ -49,15 +48,6 @@ def test_get_user_input():
         "builtins.input", return_value="Input from prompt"
     ), patch("sys.exit") as mock_exit, patch("sys.stdin.isatty", return_value=True):
         assert get_user_input() == "Input from prompt"
-
-
-@patch.object(Path, "open", new_callable=mock_open, read_data="File content")
-def test_handle_input_files(mocked_open):
-    assert handle_input_files(["file1", "file2"]) == [
-        "File 'file1':\nFile content",
-        "File 'file2':\nFile content",
-    ]
-    assert handle_input_files([]) == []
 
 
 def test_model_class_from_input():

@@ -1,6 +1,6 @@
 import json
 from io import BytesIO
-from unittest.mock import patch
+from unittest.mock import patch, mock_open
 
 import pytest
 
@@ -59,3 +59,40 @@ def test_internal_invoke(mock_handle_response, model):
 
     response = model._invoke()
     assert response == "handle response return value"
+
+
+@patch("pathlib.Path.open", new_callable=mock_open, read_data=b"test_data")
+def test_handle_input_file(mock_open, model):
+    # Test document file
+    file_data = model._handle_input_file("test.pdf")
+    assert file_data == {
+        "document": {
+            "name": "test",
+            "format": "pdf",
+            "source": {"bytes": b"test_data"},
+        }
+    }
+
+    # Test image file
+    file_data = model._handle_input_file("test.jpg")
+    assert file_data == {
+        "image": {
+            "name": "test",
+            "format": "jpeg",
+            "source": {"bytes": b"test_data"},
+        }
+    }
+
+    # Test video file
+    file_data = model._handle_input_file("test.mp4")
+    assert file_data == {
+        "video": {
+            "name": "test",
+            "format": "mp4",
+            "source": {"bytes": b"test_data"},
+        }
+    }
+
+    # Test unsupported file type
+    with pytest.raises(RuntimeError):
+        model._handle_input_file("test.exe")

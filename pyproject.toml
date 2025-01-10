@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "bedrock-bot"
-version = "1.5.0"
+version = "1.6.0"
 description = ""
 authors = ["Justin Dray <justin@dray.be>"]
 readme = "README.md"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["ANN101","COM812", "D100", "D101", "D103", "D104", "D105", "D107", "D203", "D213", "G004", "ISC001", "UP007", "RUF012"]
+ignore = ["ANN101", "B006", "COM812", "D100", "D101", "D103", "D104", "D105", "D107", "D203", "D213", "G004", "ISC001", "UP007", "RUF012"]
 exclude = ["tests/*"]
 
 [tool.ruff]
