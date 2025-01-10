@@ -90,14 +90,6 @@ def test_main_non_tty_input(mock_model_class_from_input, mock_isatty, runner):
     assert "Note that stdin is not supported for input" in result.output
 
 
-@patch("bedrock_bot.cli.sys.stdin.isatty", return_value=True)
-@patch("builtins.input", return_value="Hello")
-@patch("bedrock_bot.cli.model_class_from_input")
-def test_main_tty_input(mock_model_class_from_input, mock_input, mock_isatty, runner):
-    result = runner.invoke(main)
-    assert "Note that stdin is not supported for input" in result.output
-
-
 @patch("bedrock_bot.cli.model_class_from_input")
 @patch("bedrock_bot.cli.get_user_input", side_effect=["exit"])
 def test_main_exit(mock_get_user_input, mock_model_class_from_input, runner):

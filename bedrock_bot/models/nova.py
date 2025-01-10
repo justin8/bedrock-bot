@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Union
 
 from rich.console import Console
 
-from .base_model import ConversationRole, _BedrockModel
+from .base_model import _BedrockModel
 
 if TYPE_CHECKING:
     from botocore.config import Config
@@ -66,22 +66,6 @@ Guidelines:
             },
             "system": [{"text": self.system_prompt}],
         }
-
-    def _create_invoke_body(self) -> dict:
-        return {
-            "messages": self.messages,
-        }
-
-    def _handle_response(self, body: dict) -> str:
-        response_message = body["output"]["message"]["content"][0]
-
-        if "text" not in response_message:
-            raise RuntimeError("Unexpected response type to prompt: " + response_message["type"])
-
-        return response_message["text"]
-
-    def append_message(self, role: ConversationRole, message: str) -> None:
-        self.messages.append({"role": role.value, "content": [{"text": message}]})
 
     def __init__(self, boto_config: Union[None, Config] = None) -> None:
         super().__init__(

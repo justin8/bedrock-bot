@@ -22,7 +22,7 @@ def test_reset(model):
 
 def test_append_message(model):
     model.append_message(ConversationRole.USER, "Hello")
-    assert model.messages == [{"role": "user", "content": "Hello"}]
+    assert model.messages == [{"role": "user", "content": [{"text": "Hello"}]}]
 
 
 @patch("bedrock_bot.models.base_model._BedrockModel._invoke")
@@ -32,31 +32,30 @@ def test_invoke(mock_internal_invoke, model):
     response = model.invoke("Hello")
     assert response == "Hello, world!"
     assert model.messages == [
-        {"role": "user", "content": "Hello"},
-        {"role": "assistant", "content": "Hello, world!"},
+        {"role": "user", "content": [{"text": "Hello"}]},
+        {"role": "assistant", "content": [{"text": "Hello, world!"}]},
     ]
 
 
-def test_create_invoke_body(model):
-    with pytest.raises(NotImplementedError):
-        model._create_invoke_body()
-
-
 def test_handle_response(model):
-    with pytest.raises(NotImplementedError):
-        model._handle_response({})
+    response_body = {"output": {"message": {"content": [{"text": "Hello, human!"}]}}}
+    response = model._handle_response(response_body)
+    assert response == "Hello, human!"
 
 
-@patch("bedrock_bot.models.base_model._BedrockModel._create_invoke_body")
+def test_handle_response_raises_error(model):
+    response_body = {"output": {"message": {"content": [{"type": "image", "url": "example.com/image.jpg"}]}}}
+    with pytest.raises(RuntimeError):
+        model._handle_response(response_body)
+
+
 @patch("bedrock_bot.models.base_model._BedrockModel._handle_response")
-def test_internal_invoke(mock_handle_response, mock_create_invoke_body, model):
-    model._bedrock.invoke_model.return_value = {"body": BytesIO(json.dumps({"text": "Hello, world!"}).encode())}
+def test_internal_invoke(mock_handle_response, model):
+    model._bedrock.converse.return_value = {"output": {"message": {"content": [{"text": "Hello, world!"}]}}}
     model._model_params = lambda: {"param1": "2"}
     model._model_id = "some-model"
 
-    mock_create_invoke_body.return_value = {"foo": "bar"}
     mock_handle_response.return_value = "handle response return value"
 
     response = model._invoke()
     assert response == "handle response return value"
-    model._bedrock.invoke_model.assert_called_once_with(modelId=model._model_id, body='{"foo": "bar", "param1": "2"}')

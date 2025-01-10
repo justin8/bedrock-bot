@@ -42,35 +42,23 @@ It uses markdown for coding.
 
 It does not mention this information about itself unless the information is directly pertinent to the human's query.
 """.replace("\n", " ")
-
-    def _model_params(self) -> dict:
-        return {
-            "max_tokens": 2000,
-            "temperature": 1,
-            "top_k": 250,
-            "top_p": 0.999,
-            "stop_sequences": ["\n\nHuman:"],
-            "anthropic_version": "bedrock-2023-05-31",
-            "system": self.system_prompt,
-        }
-
-    def _create_invoke_body(self) -> dict:
-        return {
-            "messages": self.messages,
-        }
-
-    def _handle_response(self, body: dict) -> str:
-        response_message = body["content"][0]
-
-        if response_message["type"] != "text":
-            raise RuntimeError("Unexpected response type to prompt: " + response_message["type"])
-
-        return response_message["text"]
+    inference_config = {
+        "maxTokens": 2000,
+        "temperature": 1,
+        "topP": 0.999,
+        "stopSequences": ["\n\nHuman:"],
+    }
+    additional_model_request_fields = {
+        "top_k": 250,
+    }
 
     def __init__(self, boto_config: Union[None, Config] = None) -> None:
         super().__init__(
             boto_config=boto_config,
         )
+
+        self.inference_config = super().inference_config.copy()
+        self.inference_config["stopSequences"] = ["\n\nHuman:"]
 
 
 class Claude3Sonnet(_Claude3):
@@ -121,7 +109,7 @@ class Claude35Sonnet(_Claude3):
     name = "Claude-3.5-Sonnet"
 
     def __init__(self, boto_config: Union[None, Config] = None) -> None:
-        self._model_id = "anthropic.claude-3-haiku-20240307-v1:0"
+        self._model_id = "us.anthropic.claude-3-5-sonnet-20240620-v1:0"
 
         super().__init__(
             boto_config=boto_config,
