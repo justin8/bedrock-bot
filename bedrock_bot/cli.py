@@ -5,7 +5,6 @@ import readline  # noqa: F401 # pylint: disable=unused-import
 import sys
 from typing import TYPE_CHECKING
 
-import boto3
 import click
 from botocore.config import Config
 
@@ -48,12 +47,7 @@ def model_class_from_input(value: str) -> type[_BedrockModel]:
 
 
 def generate_boto_config(region: str) -> Config:
-    boto_config = Config()
-    if region:
-        boto_config = Config(region_name=region, read_timeout=600)
-    elif boto3.setup_default_session() and not boto3.DEFAULT_SESSION.region_name:
-        boto_config = Config(region_name="us-east-1")
-    return boto_config
+    return Config(region_name=region, read_timeout=600) if region else Config(region_name="us-east-1")
 
 
 def get_user_input() -> str:

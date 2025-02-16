@@ -4,13 +4,13 @@ from .nova import NovaLite, NovaMicro, NovaPro
 
 __all__ = [
     "Claude3Haiku",
-    "Claude3Sonnet",
     "Claude3Opus",
+    "Claude3Sonnet",
     "Claude35Haiku",
     "Claude35Sonnet",
     "Claude35SonnetV2",
-    "NovaMicro",
-    "NovaLite",
-    "NovaPro",
     "ConversationRole",
+    "NovaLite",
+    "NovaMicro",
+    "NovaPro",
 ]
